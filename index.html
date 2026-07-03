@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Section 40(b) Audit Dashboard</title>
+    <title>Section 40(b) Audit & Summary Dashboard</title>
     <style>
         :root {
             --primary: #1e3a8a;
@@ -80,7 +80,63 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(30,58,138,0.1);
         }
-        /* Table Formatting for Report */
+        
+        /* IMAGE_DA51A4.PNG EXACT STYLES (Left Panel Quick Block) */
+        .calc-btn {
+            width: 100%;
+            background-color: #2b5797;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+        .calc-btn:hover {
+            background-color: #1e3a8a;
+        }
+        .quick-summary-box {
+            background: #f8fafc;
+            border-left: 5px solid #2b5797;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        .summary-row strong {
+            color: #000000;
+        }
+        .left-status-badge {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .badge-allowable {
+            background-color: #d4edda;
+            color: var(--success);
+            border: 1px solid #c3e6cb;
+        }
+        .badge-default {
+            background-color: #f8d7da;
+            color: var(--danger);
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Table Formatting for Right Report */
         .audit-table {
             width: 100%;
             border-collapse: collapse;
@@ -105,7 +161,7 @@
             font-weight: bold;
             background-color: #f8fafc;
         }
-        /* Status Badges */
+        /* Right Panel Banner */
         .status-banner {
             margin-top: 15px;
             padding: 12px;
@@ -113,7 +169,6 @@
             font-weight: 700;
             text-align: center;
             font-size: 15px;
-            letter-spacing: 0.5px;
         }
         .status-allowable {
             background-color: #dcfce7;
@@ -125,34 +180,41 @@
             color: var(--danger);
             border: 1px solid #fecaca;
         }
-        .note-text {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 15px;
-            font-style: italic;
-        }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <!-- LEFT PANEL: DATA ENTRY -->
+    <!-- LEFT PANEL: DATA ENTRY & QUICK SUMMARY -->
     <div class="panel left-panel">
         <h2>Data Input Form</h2>
         <div class="form-group">
             <label for="netProfit">Net Profit as per P&L Account (Rs.):</label>
-            <input type="number" id="netProfit" value="0" oninput="generateAuditReport()">
+            <input type="number" id="netProfit" value="0">
         </div>
         <div class="form-group">
             <label for="actualRem">Actual Partner Remuneration Debited (Rs.):</label>
-            <input type="number" id="actualRem" value="0" oninput="generateAuditReport()">
+            <input type="number" id="actualRem" value="0">
         </div>
         <div class="form-group">
             <label for="otherDisallowed">Other Disallowed Expenses / Additions (Rs.):</label>
-            <input type="number" id="otherDisallowed" value="0" oninput="generateAuditReport()">
+            <input type="number" id="otherDisallowed" value="0">
         </div>
-        <div class="note-text">
-            *Note: Changes in input fields will instantly recalculate the audit panel on the right.
+        
+        <!-- Calculate Button from image_da51a4.png -->
+        <button class="calc-btn" onclick="generateAuditReport()">Calculate</button>
+
+        <!-- Quick Summary Block from image_da51a4.png -->
+        <div class="quick-summary-box">
+            <div class="summary-row">
+                <strong>Book Profit:</strong>
+                <span id="lblBookProfit">Rs. 0</span>
+            </div>
+            <div class="summary-row">
+                <strong>Max Allowable Limit u/s 40(b):</strong>
+                <span id="lblMaxLimit">Rs. 0</span>
+            </div>
+            <div id="lblStatusBadge" class="left-status-badge badge-allowable">Allowable & Within Limit</div>
         </div>
     </div>
 
@@ -238,15 +300,18 @@ function generateAuditReport() {
     document.getElementById('rptBookProfit').innerText = fmt(bookProfit);
     document.getElementById('rptActualPaidFinal').innerText = fmt(actualRem);
 
-    // 2. Limit Assessment u/s 40(b)
+    // Update Left Panel Labels (As per image_da51a4.png layout)
+    document.getElementById('lblBookProfit').innerText = "Rs. " + fmt(bookProfit);
+
+    // 2. Limit Assessment u/s 40(b) (New Amendment: Pehle Rs. 6,00,000)
     let slab1Amt = 0;
     let slab2Amt = 0;
     let slab1Text = "On first Rs. 6,00,000 (90% or 3L Higher)";
     let slab2Text = "On Balance Book Profit @ 60%";
 
     if (bookProfit <= 0) {
-        slab1Amt = 300000; // Minimum statutory allowable limit on loss/nil profit
-        slab1Text = "Minimum Statutory Limit (In case of Loss/Low Profit)";
+        slab1Amt = 300000;
+        slab1Text = "Minimum Statutory Limit (In case of Loss)";
         slab2Amt = 0;
         slab2Text = "No Balance remaining";
     } else if (bookProfit <= 600000) {
@@ -255,7 +320,7 @@ function generateAuditReport() {
         slab2Amt = 0;
         slab2Text = "No excess over Rs. 6,00,000";
     } else {
-        slab1Amt = 540000; // 90% of 6,00,000
+        slab1Amt = 540000; 
         slab1Text = "Fixed 90% on first Rs. 6,00,000";
         
         const balanceProfit = bookProfit - 600000;
@@ -271,16 +336,31 @@ function generateAuditReport() {
     document.getElementById('rptSlab2Working').innerText = slab2Text;
     document.getElementById('rptSlab2Amt').innerText = fmt(slab2Amt);
     document.getElementById('rptMaxLimit').innerText = fmt(totalMaxLimit);
+    
+    // Update Left Panel Max Limit Label
+    document.getElementById('lblMaxLimit').innerText = "Rs. " + fmt(totalMaxLimit);
 
-    // 3. Status Evaluator Block
+    // 3. Status Evaluator Block (Syncs Left Box & Right Audit Panel)
     const banner = document.getElementById('statusBanner');
+    const leftBadge = document.getElementById('lblStatusBadge');
     banner.style.display = "block";
 
     if (actualRem <= totalMaxLimit) {
+        // Left Panel Sync
+        leftBadge.className = "left-status-badge badge-allowable";
+        leftBadge.innerText = "Allowable & Within Limit";
+        
+        // Right Panel Sync
         banner.className = "status-banner status-allowable";
         banner.innerHTML = `AUDIT STATUS: Allowable & Within Limit <br><small style="font-weight:normal;">Full deduction of Rs. ${fmt(actualRem)} available to Firm.</small>`;
     } else {
         const excess = actualRem - totalMaxLimit;
+        
+        // Left Panel Sync
+        leftBadge.className = "left-status-badge badge-default";
+        leftBadge.innerText = "Default (Excess Payment)";
+        
+        // Right Panel Sync
         banner.className = "status-banner status-default";
         banner.innerHTML = `AUDIT STATUS: Default (Excess Payment Detect)<br><small style="font-weight:normal;">Rs. ${fmt(excess)} will be Disallowed u/s 40(b) & added back to Income.</small>`;
     }
