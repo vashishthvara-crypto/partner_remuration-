@@ -3,171 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Partner Remuneration Calculator (Sec 40(b))</title>
+    <title>Section 40(b) Audit Dashboard</title>
     <style>
         :root {
-            --primary: #2b5797;
-            --success: #1e7e34;
-            --danger: #bd2130;
-            --bg: #f4f6f9;
+            --primary: #1e3a8a;
+            --secondary: #475569;
+            --success: #15803d;
+            --danger: #b91c1c;
+            --bg: #f8fafc;
+            --border: #cbd5e1;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             background-color: var(--bg);
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
         }
-        .container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 25px;
             width: 100%;
-            max-width: 550px;
+            max-width: 1150px;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         }
-        h2 {
+        /* Panels Base */
+        .panel {
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .left-panel {
+            border-right: 2px dashed var(--border);
+        }
+        .right-panel {
+            background-color: #f1f5f9;
+            border: 1px solid var(--border);
+        }
+        h2, h3 {
             color: var(--primary);
-            text-align: center;
-            margin-bottom: 25px;
+            margin-top: 0;
             border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
+            padding-bottom: 8px;
         }
+        h3 {
+            color: var(--secondary);
+            border-bottom-color: var(--secondary);
+        }
+        /* Form Inputs */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
+            margin-bottom: 6px;
+            color: #334155;
+            font-size: 14px;
         }
         input[type="number"] {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border);
             border-radius: 6px;
             box-sizing: border-box;
-            font-size: 16px;
+            font-size: 15px;
+            background-color: #fff;
         }
-        button {
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30,58,138,0.1);
+        }
+        /* Table Formatting for Report */
+        .audit-table {
             width: 100%;
-            background-color: var(--primary);
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #1e4275;
-        }
-        .result-box {
-            margin-top: 25px;
-            padding: 15px;
-            border-radius: 8px;
-            background: #f8f9fa;
-            border-left: 5px solid var(--primary);
-        }
-        .result-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-        .status-badge {
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: bold;
+            border-collapse: collapse;
             margin-top: 15px;
-            display: none;
+            background: #ffffff;
+            font-size: 14px;
+        }
+        .audit-table th, .audit-table td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            text-align: left;
+        }
+        .audit-table th {
+            background-color: var(--secondary);
+            color: white;
+            font-weight: 600;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .bold-row {
+            font-weight: bold;
+            background-color: #f8fafc;
+        }
+        /* Status Badges */
+        .status-banner {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 15px;
+            letter-spacing: 0.5px;
         }
         .status-allowable {
-            background-color: #d4edda;
+            background-color: #dcfce7;
             color: var(--success);
-            border: 1px solid #c3e6cb;
+            border: 1px solid #bbf7d0;
         }
         .status-default {
-            background-color: #f8d7da;
+            background-color: #fee2e2;
             color: var(--danger);
-            border: 1px solid #f5c6cb;
+            border: 1px solid #fecaca;
+        }
+        .note-text {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 15px;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Partner Remuneration & Book Profit Calculator</h2>
-    
-    <div class="form-group">
-        <label for="netProfit">Net Profit as per P&L (Rs.):</label>
-        <input type="number" id="netProfit" value="0">
-    </div>
-    
-    <div class="form-group">
-        <label for="actualRem">Actual Remuneration Paid to Partners (Rs.):</label>
-        <input type="number" id="actualRem" value="0">
-    </div>
-    
-    <div class="form-group">
-        <label for="otherDisallowed">Other Disallowed Expenses (Rs.):</label>
-        <input type="number" id="otherDisallowed" value="0">
-    </div>
-    
-    <button onclick="calculateTaxation()">Calculate</button>
-    
-    <div class="result-box">
-        <div class="result-row">
-            <strong>Book Profit:</strong>
-            <span id="resBookProfit">Rs. 0</span>
+<div class="dashboard">
+    <!-- LEFT PANEL: DATA ENTRY -->
+    <div class="panel left-panel">
+        <h2>Data Input Form</h2>
+        <div class="form-group">
+            <label for="netProfit">Net Profit as per P&L Account (Rs.):</label>
+            <input type="number" id="netProfit" value="0" oninput="generateAuditReport()">
         </div>
-        <div class="result-row">
-            <strong>Max Allowable Limit u/s 40(b):</strong>
-            <span id="resMaxLimit">Rs. 0</span>
+        <div class="form-group">
+            <label for="actualRem">Actual Partner Remuneration Debited (Rs.):</label>
+            <input type="number" id="actualRem" value="0" oninput="generateAuditReport()">
         </div>
+        <div class="form-group">
+            <label for="otherDisallowed">Other Disallowed Expenses / Additions (Rs.):</label>
+            <input type="number" id="otherDisallowed" value="0" oninput="generateAuditReport()">
+        </div>
+        <div class="note-text">
+            *Note: Changes in input fields will instantly recalculate the audit panel on the right.
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: PROFESSIONAL AUDIT REPORT -->
+    <div class="panel right-panel">
+        <h3>Computation Sheet (u/s 40(b))</h3>
         
-        <div id="statusMessage" class="status-badge"></div>
+        <table class="audit-table">
+            <thead>
+                <tr>
+                    <th>Particulars</th>
+                    <th>Working / Statutory Provision</th>
+                    <th class="text-right">Amount (Rs.)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Net Profit as per Books</td>
+                    <td>As per P&L Account</td>
+                    <td id="rptNetProfit" class="text-right">0</td>
+                </tr>
+                <tr>
+                    <td>Add: Partner Remuneration</td>
+                    <td>Inbuilt add-back for Book Profit</td>
+                    <td id="rptActualAdd" class="text-right">0</td>
+                </tr>
+                <tr>
+                    <td>Add: Other Disallowances</td>
+                    <td>Under section 37 / 40 / 43B etc.</td>
+                    <td id="rptOtherAdd" class="text-right">0</td>
+                </tr>
+                <tr class="bold-row" style="color: var(--primary);">
+                    <td>BOOK PROFIT (A)</td>
+                    <td>Computed Net Business Profit</td>
+                    <td id="rptBookProfit" class="text-right">0</td>
+                </tr>
+                <tr>
+                    <td>Remuneration Limit: Slab 1</td>
+                    <td id="rptSlab1Working">On first Rs. 6,00,000 (90% or 3L Higher)</td>
+                    <td id="rptSlab1Amt" class="text-right">0</td>
+                </tr>
+                <tr>
+                    <td>Remuneration Limit: Slab 2</td>
+                    <td id="rptSlab2Working">On Balance Book Profit @ 60%</td>
+                    <td id="rptSlab2Amt" class="text-right">0</td>
+                </tr>
+                <tr class="bold-row">
+                    <td>MAX ALLOWABLE LIMIT (B)</td>
+                    <td>Statutory Cap u/s 40(b) (FA 2024)</td>
+                    <td id="rptMaxLimit" class="text-right">0</td>
+                </tr>
+                <tr>
+                    <td>Actual Remuneration Paid (C)</td>
+                    <td>As per Partnership Deed Clause</td>
+                    <td id="rptActualPaidFinal" class="text-right">0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Dynamic Summary Status Area -->
+        <div id="statusBanner" class="status-banner" style="display:none;"></div>
     </div>
 </div>
 
 <script>
-function calculateTaxation() {
-    // Inputs reading
+function fmt(num) {
+    return num.toLocaleString('en-IN');
+}
+
+function generateAuditReport() {
+    // Reading values
     const netProfit = parseFloat(document.getElementById('netProfit').value) || 0;
     const actualRem = parseFloat(document.getElementById('actualRem').value) || 0;
     const otherDisallowed = parseFloat(document.getElementById('otherDisallowed').value) || 0;
     
-    // 1. Inbuilt Formula for Book Profit
+    // 1. Calculate Book Profit
     const bookProfit = netProfit + actualRem + otherDisallowed;
-    document.getElementById('resBookProfit').innerText = "Rs. " + bookProfit.toLocaleString('en-IN');
     
-    // 2. Max Allowable Limit Calculation (New Amendment: Pehle 6,00,000 par)
-    let maxLimit = 0;
-    if (bookProfit <= 600000) {
-        maxLimit = Math.max(300000, bookProfit * 0.9);
+    // Update basic table fields
+    document.getElementById('rptNetProfit').innerText = fmt(netProfit);
+    document.getElementById('rptActualAdd').innerText = fmt(actualRem);
+    document.getElementById('rptOtherAdd').innerText = fmt(otherDisallowed);
+    document.getElementById('rptBookProfit').innerText = fmt(bookProfit);
+    document.getElementById('rptActualPaidFinal').innerText = fmt(actualRem);
+
+    // 2. Limit Assessment u/s 40(b)
+    let slab1Amt = 0;
+    let slab2Amt = 0;
+    let slab1Text = "On first Rs. 6,00,000 (90% or 3L Higher)";
+    let slab2Text = "On Balance Book Profit @ 60%";
+
+    if (bookProfit <= 0) {
+        slab1Amt = 300000; // Minimum statutory allowable limit on loss/nil profit
+        slab1Text = "Minimum Statutory Limit (In case of Loss/Low Profit)";
+        slab2Amt = 0;
+        slab2Text = "No Balance remaining";
+    } else if (bookProfit <= 600000) {
+        slab1Amt = Math.max(300000, bookProfit * 0.9);
+        slab1Text = `MAX(3,00,000 , ${fmt(bookProfit)} × 90%)`;
+        slab2Amt = 0;
+        slab2Text = "No excess over Rs. 6,00,000";
     } else {
-        maxLimit = Math.max(300000, 600000 * 0.9) + ((bookProfit - 600000) * 0.6);
+        slab1Amt = 540000; // 90% of 6,00,000
+        slab1Text = "Fixed 90% on first Rs. 6,00,000";
+        
+        const balanceProfit = bookProfit - 600000;
+        slab2Amt = balanceProfit * 0.6;
+        slab2Text = `(${fmt(bookProfit)} - 6,00,000) × 60%`;
     }
-    document.getElementById('resMaxLimit').innerText = "Rs. " + maxLimit.toLocaleString('en-IN');
-    
-    // 3. Comparison & Status Logic
-    const statusBox = document.getElementById('statusMessage');
-    statusBox.style.display = "block";
-    
-    if (actualRem <= maxLimit) {
-        statusBox.className = "status-badge status-allowable";
-        statusBox.innerText = "Allowable & Within Limit";
+
+    const totalMaxLimit = slab1Amt + slab2Amt;
+
+    // Update limit breakdown fields
+    document.getElementById('rptSlab1Working').innerText = slab1Text;
+    document.getElementById('rptSlab1Amt').innerText = fmt(slab1Amt);
+    document.getElementById('rptSlab2Working').innerText = slab2Text;
+    document.getElementById('rptSlab2Amt').innerText = fmt(slab2Amt);
+    document.getElementById('rptMaxLimit').innerText = fmt(totalMaxLimit);
+
+    // 3. Status Evaluator Block
+    const banner = document.getElementById('statusBanner');
+    banner.style.display = "block";
+
+    if (actualRem <= totalMaxLimit) {
+        banner.className = "status-banner status-allowable";
+        banner.innerHTML = `AUDIT STATUS: Allowable & Within Limit <br><small style="font-weight:normal;">Full deduction of Rs. ${fmt(actualRem)} available to Firm.</small>`;
     } else {
-        const excess = actualRem - maxLimit;
-        statusBox.className = "status-badge status-default";
-        statusBox.innerText = "Default (Excess Payment: Rs. " + excess.toLocaleString('en-IN') + " Disallowed)";
+        const excess = actualRem - totalMaxLimit;
+        banner.className = "status-banner status-default";
+        banner.innerHTML = `AUDIT STATUS: Default (Excess Payment Detect)<br><small style="font-weight:normal;">Rs. ${fmt(excess)} will be Disallowed u/s 40(b) & added back to Income.</small>`;
     }
 }
+
+// Initial Run on page load
+generateAuditReport();
 </script>
 
 </body>
