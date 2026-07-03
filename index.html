@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Remuneration Calculator (Sec 40(b))</title>
+    <style>
+        :root {
+            --primary: #2b5797;
+            --success: #1e7e34;
+            --danger: #bd2130;
+            --bg: #f4f6f9;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 550px;
+        }
+        h2 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #1e4275;
+        }
+        .result-box {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 5px solid var(--primary);
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .status-badge {
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 15px;
+            display: none;
+        }
+        .status-allowable {
+            background-color: #d4edda;
+            color: var(--success);
+            border: 1px solid #c3e6cb;
+        }
+        .status-default {
+            background-color: #f8d7da;
+            color: var(--danger);
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Partner Remuneration & Book Profit Calculator</h2>
+    
+    <div class="form-group">
+        <label for="netProfit">Net Profit as per P&L (Rs.):</label>
+        <input type="number" id="netProfit" value="0">
+    </div>
+    
+    <div class="form-group">
+        <label for="actualRem">Actual Remuneration Paid to Partners (Rs.):</label>
+        <input type="number" id="actualRem" value="0">
+    </div>
+    
+    <div class="form-group">
+        <label for="otherDisallowed">Other Disallowed Expenses (Rs.):</label>
+        <input type="number" id="otherDisallowed" value="0">
+    </div>
+    
+    <button onclick="calculateTaxation()">Calculate</button>
+    
+    <div class="result-box">
+        <div class="result-row">
+            <strong>Book Profit:</strong>
+            <span id="resBookProfit">Rs. 0</span>
+        </div>
+        <div class="result-row">
+            <strong>Max Allowable Limit u/s 40(b):</strong>
+            <span id="resMaxLimit">Rs. 0</span>
+        </div>
+        
+        <div id="statusMessage" class="status-badge"></div>
+    </div>
+</div>
+
+<script>
+function calculateTaxation() {
+    // Inputs reading
+    const netProfit = parseFloat(document.getElementById('netProfit').value) || 0;
+    const actualRem = parseFloat(document.getElementById('actualRem').value) || 0;
+    const otherDisallowed = parseFloat(document.getElementById('otherDisallowed').value) || 0;
+    
+    // 1. Inbuilt Formula for Book Profit
+    const bookProfit = netProfit + actualRem + otherDisallowed;
+    document.getElementById('resBookProfit').innerText = "Rs. " + bookProfit.toLocaleString('en-IN');
+    
+    // 2. Max Allowable Limit Calculation (New Amendment: Pehle 6,00,000 par)
+    let maxLimit = 0;
+    if (bookProfit <= 600000) {
+        maxLimit = Math.max(300000, bookProfit * 0.9);
+    } else {
+        maxLimit = Math.max(300000, 600000 * 0.9) + ((bookProfit - 600000) * 0.6);
+    }
+    document.getElementById('resMaxLimit').innerText = "Rs. " + maxLimit.toLocaleString('en-IN');
+    
+    // 3. Comparison & Status Logic
+    const statusBox = document.getElementById('statusMessage');
+    statusBox.style.display = "block";
+    
+    if (actualRem <= maxLimit) {
+        statusBox.className = "status-badge status-allowable";
+        statusBox.innerText = "Allowable & Within Limit";
+    } else {
+        const excess = actualRem - maxLimit;
+        statusBox.className = "status-badge status-default";
+        statusBox.innerText = "Default (Excess Payment: Rs. " + excess.toLocaleString('en-IN') + " Disallowed)";
+    }
+}
+</script>
+
+</body>
+</html>
