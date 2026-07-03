@@ -105,6 +105,7 @@
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            margin-bottom: 15px;
         }
         .summary-row {
             display: flex;
@@ -180,6 +181,13 @@
             color: var(--danger);
             border: 1px solid #fecaca;
         }
+        .note-text {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 10px;
+            font-style: italic;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -188,20 +196,22 @@
     <!-- LEFT PANEL: DATA ENTRY & QUICK SUMMARY -->
     <div class="panel left-panel">
         <h2>Data Input Form</h2>
+        
+        <!-- TRIGGER 1: oninput executes function automatically on every keystroke -->
         <div class="form-group">
             <label for="netProfit">Net Profit as per P&L Account (Rs.):</label>
-            <input type="number" id="netProfit" value="0">
+            <input type="number" id="netProfit" value="0" oninput="generateAuditReport()">
         </div>
         <div class="form-group">
             <label for="actualRem">Actual Partner Remuneration Debited (Rs.):</label>
-            <input type="number" id="actualRem" value="0">
+            <input type="number" id="actualRem" value="0" oninput="generateAuditReport()">
         </div>
         <div class="form-group">
             <label for="otherDisallowed">Other Disallowed Expenses / Additions (Rs.):</label>
-            <input type="number" id="otherDisallowed" value="0">
+            <input type="number" id="otherDisallowed" value="0" oninput="generateAuditReport()">
         </div>
         
-        <!-- Calculate Button from image_da51a4.png -->
+        <!-- TRIGGER 2: Manual click button from image_da51a4.png -->
         <button class="calc-btn" onclick="generateAuditReport()">Calculate</button>
 
         <!-- Quick Summary Block from image_da51a4.png -->
@@ -215,6 +225,11 @@
                 <span id="lblMaxLimit">Rs. 0</span>
             </div>
             <div id="lblStatusBadge" class="left-status-badge badge-allowable">Allowable & Within Limit</div>
+        </div>
+
+        <!-- Custom Note Added Below -->
+        <div class="note-text">
+            *Note: Changes in input fields will instantly recalculate the audit panel on the right.
         </div>
     </div>
 
@@ -303,7 +318,7 @@ function generateAuditReport() {
     // Update Left Panel Labels (As per image_da51a4.png layout)
     document.getElementById('lblBookProfit').innerText = "Rs. " + fmt(bookProfit);
 
-    // 2. Limit Assessment u/s 40(b) (New Amendment: Pehle Rs. 6,00,000)
+    // 2. Limit Assessment u/s 40(b) (New Amendment)
     let slab1Amt = 0;
     let slab2Amt = 0;
     let slab1Text = "On first Rs. 6,00,000 (90% or 3L Higher)";
@@ -340,27 +355,23 @@ function generateAuditReport() {
     // Update Left Panel Max Limit Label
     document.getElementById('lblMaxLimit').innerText = "Rs. " + fmt(totalMaxLimit);
 
-    // 3. Status Evaluator Block (Syncs Left Box & Right Audit Panel)
+    // 3. Status Evaluator Block
     const banner = document.getElementById('statusBanner');
     const leftBadge = document.getElementById('lblStatusBadge');
     banner.style.display = "block";
 
     if (actualRem <= totalMaxLimit) {
-        // Left Panel Sync
         leftBadge.className = "left-status-badge badge-allowable";
         leftBadge.innerText = "Allowable & Within Limit";
         
-        // Right Panel Sync
         banner.className = "status-banner status-allowable";
         banner.innerHTML = `AUDIT STATUS: Allowable & Within Limit <br><small style="font-weight:normal;">Full deduction of Rs. ${fmt(actualRem)} available to Firm.</small>`;
     } else {
         const excess = actualRem - totalMaxLimit;
         
-        // Left Panel Sync
         leftBadge.className = "left-status-badge badge-default";
         leftBadge.innerText = "Default (Excess Payment)";
         
-        // Right Panel Sync
         banner.className = "status-banner status-default";
         banner.innerHTML = `AUDIT STATUS: Default (Excess Payment Detect)<br><small style="font-weight:normal;">Rs. ${fmt(excess)} will be Disallowed u/s 40(b) & added back to Income.</small>`;
     }
